@@ -16,8 +16,9 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 
 	void *operand = NULL;
 
-	if (hasSubType(&container)) {
+	if (instr->hasSubType) {
 		// TODO: implement array and pointer types
+		return;
 	}
 	else {
 		// read value from the 64 bits following initial operand

@@ -35,7 +35,8 @@ RuntimeContext *initializeRuntimeFromFile(char *filePath) {
 
 	fseek(file, 0, SEEK_END);
 	long fileSize = ftell(file);
-	fseek(file, 0, SEEK_SET);
+	//fseek(file, 0, SEEK_SET);
+	rewind(file);
 
 	char* fileBuff = (char*)malloc(fileSize);
 	fread(fileBuff, 1, fileSize, file);

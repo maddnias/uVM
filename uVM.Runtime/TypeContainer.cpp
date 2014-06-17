@@ -11,5 +11,5 @@ int getSubType(TypeContainer *container) {
 	return container->container & MAXUINT16;
 }
 int hasSubType(TypeContainer *container) {
-	return (getSubType(container) == getMainType(container) ? 1 : 0);
+	return (getSubType(container) == getMainType(container) ? 0 : 1);
 }
