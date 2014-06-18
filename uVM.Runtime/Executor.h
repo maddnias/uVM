@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "uVM.Runtime.h"
+#include "TypeContainer.h"
 
 #pragma once
 const int MAX_STACK = 32;
@@ -19,17 +20,19 @@ enum StackBehaviour {
 };
 
 enum OpCode {
-	Push = 0,
-	Ret = 1,
-	Add = 2,
-	LCall = 3,
-	Sub = 4,
-	Mul = 5,
-	Div = 6,
-	IJmp = 7,
-	Alloc = 8,
-	RARG = 9,
-	RLOC
+	PUSH,
+	RET,
+	ADD,
+	LCALL,
+	SUB,
+	MUL,
+	DIV,
+	IJMP,
+	ALLOC,
+	RARG,
+	RLOC,
+	MKARR,
+	SETELEM,
 };
 
 enum DataType {
@@ -52,20 +55,18 @@ struct Instruction {
 	int operandSize;
 	StackBehaviour stackBehaviour;
 	void *operand;
-	DataType operandMainType;
-	DataType operandSubType;
-	int hasSubType;
+	TypeContainer type;
 };
 
 struct StackEntry {
 	long long value;
-	DataType type;
+	TypeContainer type;
 };
 
 struct Parameter {
 	int index;
 	long long value;
-	DataType type;
+	TypeContainer type;
 };
 
 struct FunctionContext {
@@ -80,7 +81,7 @@ struct FunctionContext {
 	char *code;
 	unsigned int localIp;
 	long returnValue;
-	DataType returnType;
+	TypeContainer returnType;
 };
 
 void executeFunction(FunctionContext *func, RuntimeContext *ctx);

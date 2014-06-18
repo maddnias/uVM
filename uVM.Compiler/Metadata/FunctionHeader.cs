@@ -28,7 +28,7 @@ namespace uVM.Compiler.Metadata
             writer.Write(ReturnType);
             writer.Write(ParameterCount);
             for (var i = 0; i < ParameterCount; i++)
-                writer.Write((char) 1);
+                writer.Write(TestCompiler.DoubleShort2Int(1, 1));
             writer.Write(OpCount);
             writer.Write((int)Code.Length);
             writer.Write(Code);

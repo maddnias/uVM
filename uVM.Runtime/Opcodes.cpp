@@ -4,26 +4,45 @@
 #include "TypeContainer.h"
 
 int fillFunctionParameters(FunctionContext *caller, FunctionContext *callee);
+int getElementSize(DataType type);
+
+int getElementSize(DataType type) {
+	switch (type)
+	{
+	case DT_SHORT:
+	case DT_USHORT:
+		return 2;
+		break;
+	case DT_INTEGER:
+	case DT_UINTEGER:
+	case DT_STRING:
+		return 4;
+		break;
+	case DT_LONG:
+	case DT_ULONG:
+		return 8;
+		break;
+	default:
+		return -1;
+	}
+}
 
 void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 	// read low 32 bits
 	TypeContainer container;
 	container.container = (int)(*(long long*)(code + *ip) >> 32);
 
-	instr->operandMainType = (DataType)getMainType(&container);
-	instr->operandSubType = (DataType)getSubType(&container);
-	instr->hasSubType = hasSubType(&container);
+	instr->type = container;
 
 	void *operand = NULL;
 
-	if (instr->hasSubType) {
-		// TODO: implement array and pointer types
-		return;
-	}
-	else {
+	//if (instr->hasSubType) {
+	//	return;
+	//}
+	 {
 		// read value from the 64 bits following initial operand
-		if (instr->operandMainType == DT_LONG ||
-			instr->operandMainType == DT_ULONG) {
+		if (getMainType(&instr->type) == DT_LONG ||
+			getMainType(&instr->type) == DT_ULONG) {
 			operand = (long long*)malloc(sizeof(long long));
 			*(long long*)operand = *(long long*)(code + *ip + 8);
 			*ip += 16;
@@ -44,24 +63,24 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 }
 
 void op_push(Instruction *instr, FunctionContext *func) {
-	switch (instr->operandMainType) {
+	switch (getMainType(&instr->type)) {
 	case DT_SHORT:
-		stackPush(func, *(short*)instr->operand, instr->operandMainType);
+		stackPush(func, *(short*)instr->operand, instr->type);
 		break;
 	case DT_INTEGER:
-		stackPush(func, *(int*)instr->operand, instr->operandMainType);
+		stackPush(func, *(int*)instr->operand, instr->type);
 		break;
 	case DT_LONG:
-		stackPush(func, *(long long*)instr->operand, instr->operandMainType);
+		stackPush(func, *(long long*)instr->operand, instr->type);
 		break;
 	case DT_USHORT:
-		stackPush(func, *(unsigned short*)instr->operand, instr->operandMainType);
+		stackPush(func, *(unsigned short*)instr->operand, instr->type);
 		break;
 	case DT_UINTEGER:
-		stackPush(func, *(unsigned int*)instr->operand, instr->operandMainType);
+		stackPush(func, *(unsigned int*)instr->operand, instr->type);
 		break;
 	case DT_ULONG:
-		stackPush(func, *(unsigned long long*)instr->operand, instr->operandMainType);
+		stackPush(func, *(unsigned long long*)instr->operand, instr->type);
 		break;
 	}
 }
@@ -69,43 +88,43 @@ void op_push(Instruction *instr, FunctionContext *func) {
 void op_ret(Instruction *instr, FunctionContext *func) {
 	// there might not be a value on top of stack if
 	// the return type is a void
-	if (func->returnType != DT_VOID)
+	if (getMainType(&func->returnType) != DT_VOID)
 		func->returnValue = stackPop(func).value;
 }
 
 void op_add(Instruction *instr, FunctionContext *func) {
-	DataType type1 = getTopStackType(func);
+	TypeContainer type1 = getTopStackType(func);
 	long long val1 = stackPop(func).value;
-	DataType type2 = getTopStackType(func);
+	TypeContainer type2 = getTopStackType(func);
 	long long val2 = stackPop(func).value;
 
-	if (type1 == DT_STRING || type2 == DT_STRING)
+	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
 	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 + val1, instr->operandMainType);
+	stackPush(func, val2 + val1, instr->type);
 }
 
 void op_sub(Instruction *instr, FunctionContext *func) {
-	DataType type1 = getTopStackType(func);
+	TypeContainer type1 = getTopStackType(func);
 	long long val1 = stackPop(func).value;
-	DataType type2 = getTopStackType(func);
+	TypeContainer type2 = getTopStackType(func);
 	long long val2 = stackPop(func).value;
 
-	if (type1 == DT_STRING || type2 == DT_STRING)
+	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
 	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 - val1, instr->operandMainType);
+	stackPush(func, val2 - val1, instr->type);
 }
 
 void op_mul(Instruction *instr, FunctionContext *func) {
-	DataType type1 = getTopStackType(func);
+	TypeContainer type1 = getTopStackType(func);
 	long long val1 = stackPop(func).value;
-	DataType type2 = getTopStackType(func);
+	TypeContainer type2 = getTopStackType(func);
 	long long val2 = stackPop(func).value;
 
-	if (type1 == DT_STRING || type2 == DT_STRING)
+	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
 	// swap places of val1 and val2 because of stack structure
@@ -113,16 +132,16 @@ void op_mul(Instruction *instr, FunctionContext *func) {
 }
 
 void op_div(Instruction *instr, FunctionContext *func) {
-	DataType type1 = getTopStackType(func);
+	TypeContainer type1 = getTopStackType(func);
 	long long val1 = stackPop(func).value;
-	DataType type2 = getTopStackType(func);
+	TypeContainer type2 = getTopStackType(func);
 	long long val2 = stackPop(func).value;
 
-	if (type1 == DT_STRING || type2 == DT_STRING)
+	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
 	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 / val1, instr->operandMainType);
+	stackPush(func, val2 / val1, instr->type);
 }
 
 void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
@@ -143,7 +162,7 @@ void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 
 	// there might not be a value on top of stack if
 	// callee return type is void
-	if (targetFunc->returnType != DT_VOID) {
+	if (getMainType(&targetFunc->returnType) != DT_VOID) {
 		stackPush(func, targetFunc->returnValue, targetFunc->returnType);
 	}
 	free(targetFunc);
@@ -156,7 +175,7 @@ int fillFunctionParameters(FunctionContext *caller, FunctionContext *callee) {
 	}
 	// check if parameter types match
 	for (int i = 0, j = callee->parameterCount; i < callee->parameterCount; i++, j--) {
-		if (stackPeek(caller, j).type != callee->parameters[i]->type) {
+		if (getMainType(&stackPeek(caller, j).type) != getMainType(&callee->parameters[i]->type)) {
 			return -1;
 		}
 	}
@@ -180,7 +199,7 @@ void op_alloc(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	if (ptr == -1)
 		// failed to allocate memory
 		return;
-	stackPush(func, ptr, DT_INTEGER);
+	stackPush(func, ptr, instr->type);
 }
 
 void op_rarg(Instruction *instr, FunctionContext *func) {
@@ -194,5 +213,37 @@ void op_rarg(Instruction *instr, FunctionContext *func) {
 		if (func->parameters[i]->index == argIdx)
 			param = *func->parameters[i];
 
-	stackPush(func, param.value, instr->operandMainType);
+	stackPush(func, param.value, instr->type);
+}
+
+void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+	if (!hasSubType(&instr->type) || getSubType(&instr->type) != DT_ARRAY)
+		// invalid type
+		return;
+
+	int elementSize = getElementSize((DataType)getMainType(&instr->type));
+	int initSize = stackPop(func).value;
+	int pBase = allocateMemory(initSize * elementSize, ctx->globalMemoryBlock);
+
+	stackPush(func, pBase, instr->type);
+}
+
+void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+	StackEntry value = stackPop(func);
+	StackEntry elementIdx = stackPop(func);
+	StackEntry pArray = stackPop(func);
+
+	DataType elementType = (DataType)getMainType(&pArray.type);
+	if ((int)elementType != getMainType(&value.type)) {
+		return;
+	}
+	int elementSize = getElementSize(elementType);
+	// copy value on stack to [pArr + (elementSize * index)] in global memory
+	memcpy((char*)ctx->globalMemoryBlock->mem + (elementIdx.value * elementSize), &value.value, elementSize);
+
+	long long testVal = 0;
+
+	memcpy(&testVal, (char*)ctx->globalMemoryBlock->mem + (elementIdx.value * elementSize), elementSize);
+
+	return;
 }

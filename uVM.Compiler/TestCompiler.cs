@@ -15,16 +15,22 @@ namespace uVM.Compiler
             var filehdr = new FileHeader(0);
             var functionTbl = new FunctionTable(2);
 
-            var mainfunc = new FunctionHeader(8, 3, null, 0);
+            var mainfunc = new FunctionHeader(8, 6, null, 0);
             var func2 = new FunctionHeader(1, 4, null, 1);
 
             using (var ms = new MemoryStream())
             using (var bw = new BinaryWriter(ms))
             {
-                bw.Write(0); // PUSH -1000
-                bw.Write(DoubleInt2Long(1, 1, -1000));
-                bw.Write(3); // LCALL func2
-                bw.Write(DoubleInt2Long(5, 5, 1));
+                bw.Write(0); // PUSH 5
+                bw.Write(DoubleInt2Long(1, 1, 5));
+                bw.Write(11); // MKARR DT_INTEGER
+                bw.Write(DoubleInt2Long(1, 9, 0));
+                bw.Write(0); // PUSH 0
+                bw.Write(DoubleInt2Long(1, 1, 0));
+                bw.Write(0); // PUSH 5
+                bw.Write(DoubleInt2Long(1, 1, 5));
+                bw.Write(12); // SETELEM 23
+                bw.Write(DoubleInt2Long(1, 1, 0));
                 bw.Write(1); // RET
 
                 mainfunc.Code = ms.ToArray();
@@ -55,7 +61,7 @@ namespace uVM.Compiler
                 File.WriteAllBytes("C:\\Users\\Mattias\\Documents\\testfile.uc", ms.ToArray());
             }
         }
-        static long DoubleInt2Long(int mainType, int subType, int value)
+        public static long DoubleInt2Long(int mainType, int subType, int value)
         {
             int type = DoubleShort2Int(mainType, subType);
             long b = type;
@@ -65,7 +71,7 @@ namespace uVM.Compiler
             return b;
         }
 
-        static int DoubleShort2Int(int hi, int lo)
+        public static int DoubleShort2Int(int hi, int lo)
         {
             int b = hi;
             b = b << 16;

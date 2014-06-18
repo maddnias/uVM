@@ -40,11 +40,11 @@ FuncTable *readFuncTable(char *fileBuff, unsigned int *pos) {
 		*pos += sizeof(unsigned int);
 
 		if (tbl->table[i]->paramCount > 0) {
-			tbl->table[i]->paramTypes = (char**)malloc(sizeof(char*));
+			tbl->table[i]->paramTypes = (int**)malloc(sizeof(int*));
 			for (int j = 0; j < tbl->table[i]->paramCount; j++) {
-				tbl->table[i]->paramTypes[j] = (char*)malloc(sizeof(char));
-				tbl->table[i]->paramTypes[j] = (char*)(fileBuff + *pos);
-				*pos += 1;
+				tbl->table[i]->paramTypes[j] = (int*)malloc(sizeof(int));
+				tbl->table[i]->paramTypes[j] = (int*)(fileBuff + *pos);
+				*pos += 4;
 			}
 		}
 

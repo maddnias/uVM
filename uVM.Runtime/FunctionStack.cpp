@@ -1,17 +1,17 @@
 #include "stdafx.h"
 #include "FunctionStack.h"
 
-DataType getTopStackType(FunctionContext *func) {
-	return func->funcStack[func->stackTop -1].type;
+TypeContainer getTopStackType(FunctionContext *func) {
+	return func->funcStack[func->stackTop - 1].type;
 }
 
-void stackPush(FunctionContext *func, long long value, DataType type) {
+void stackPush(FunctionContext *func, long long value, TypeContainer type) {
 	if (func->stackTop + 1 > MAX_STACK)
 		// stack overflow
 		return;
 
 	long long paddedValue = 0;
-	switch (type) {
+	switch (getMainType(&type)) {
 	case DT_SHORT:
 	case DT_USHORT:
 		memcpy(&paddedValue, &value, 2);

@@ -25,36 +25,42 @@ void executeFunction(FunctionContext *func, RuntimeContext *ctx) {
 
 int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	switch (instr->opcode) {
-	case Push:
+	case PUSH:
 		op_push(instr, func);
 		break;
-	case Add:
+	case ADD:
 		op_add(instr, func);
 		break;
-	case Sub:
+	case SUB:
 		op_sub(instr, func);
 		break;
-	case Mul:
+	case MUL:
 		op_mul(instr, func);
 		break;
-	case Div:
+	case DIV:
 		op_div(instr, func);
 		break;
-	case LCall:
+	case LCALL:
 		op_lcall(instr, func, ctx);
 		break;
-	case IJmp:
+	case IJMP:
 		op_ijmp(instr, func);
 		break;
 	case RARG:
 		op_rarg(instr, func);
 		break;
-	case Ret:
+	case MKARR:
+		op_mkarr(instr, func, ctx);
+		break;
+	case SETELEM:
+		op_setelem(instr, func, ctx);
+		break;
+	case RET:
 		op_ret(instr, func);
 		return 0;
 	}
 
-	if (instr->opcode != IJmp) {
+	if (instr->opcode != IJMP) {
 		if (func->next +1 <= func->opCount)
 			func->next++;
 	}
@@ -69,46 +75,46 @@ int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
 	instr->offset = *ip;
 
 	switch (opcode) {
-	case Push:
+	case PUSH:
 		instr->hasOperand = true;
-		instr->opcode = Push;
+		instr->opcode = PUSH;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
-	case Add:
+	case ADD:
 		instr->hasOperand = false;
-		instr->opcode = Add;
+		instr->opcode = ADD;
 		instr->stackBehaviour = Push1;
 		break;
-	case Sub:
+	case SUB:
 		instr->hasOperand = false;
-		instr->opcode = Sub;
+		instr->opcode = SUB;
 		instr->stackBehaviour = Push1;
 		break;
-	case Mul:
+	case MUL:
 		instr->hasOperand = false;
-		instr->opcode = Mul;
+		instr->opcode = MUL;
 		instr->stackBehaviour = Push1;
 		break;
-	case Div:
+	case DIV:
 		instr->hasOperand = false;
-		instr->opcode = Div;
+		instr->opcode = DIV;
 		instr->stackBehaviour = Push1;
 		break;
-	case Ret:
+	case RET:
 		instr->hasOperand = false;
-		instr->opcode = Ret;
+		instr->opcode = RET;
 		instr->stackBehaviour = None;
 		break;
-	case LCall:
+	case LCALL:
 		instr->hasOperand = true;
-		instr->opcode = LCall;
+		instr->opcode = LCALL;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
-	case IJmp:
+	case IJMP:
 		instr->hasOperand = true;
-		instr->opcode = IJmp;
+		instr->opcode = IJMP;
 		instr->stackBehaviour = None;
 		readOperand(code, ip, instr);
 		break;
@@ -116,6 +122,18 @@ int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
 		instr->hasOperand = true;
 		instr->opcode = RARG;
 		instr->stackBehaviour = Push1;
+		readOperand(code, ip, instr);
+		break;
+	case MKARR: 
+		instr->hasOperand = true;
+		instr->opcode = MKARR;
+		instr->stackBehaviour = Push1;
+		readOperand(code, ip, instr);
+		break;
+	case SETELEM:
+		instr->hasOperand = true;
+		instr->opcode = SETELEM;
+		instr->stackBehaviour = Pop2;
 		readOperand(code, ip, instr);
 		break;
 	default:
@@ -132,7 +150,9 @@ FunctionContext *createFunction(FuncHeader *hdr, RuntimeContext *ctx) {
 	func->localIp = 0;
 	func->stackTop = 0;
 	func->opCount = hdr->opCount;
-	func->returnType = (DataType)hdr->returnType;
+	TypeContainer container;
+	container.container = (int)hdr->returnType;
+	func->returnType = container;
 	func->parameterCount = hdr->paramCount;
 
 	if (func->parameterCount > 0) {
@@ -140,7 +160,8 @@ FunctionContext *createFunction(FuncHeader *hdr, RuntimeContext *ctx) {
 		for (int i = 0; i < hdr->paramCount; i++) {
 			func->parameters[i] = (Parameter*)malloc(sizeof(Parameter));
 			func->parameters[i]->index = i;
-			func->parameters[i]->type = (DataType)*(char*)hdr->paramTypes[i];
+			container.container = *hdr->paramTypes[i];
+			func->parameters[i]->type = container;
 		}
 	}
 

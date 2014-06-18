@@ -7,7 +7,7 @@
 struct FuncHeader {
 	char returnType;
 	unsigned int paramCount;
-	char **paramTypes;
+	int **paramTypes;
 	int opCount;
 	int codeSize;
 	char *code;
