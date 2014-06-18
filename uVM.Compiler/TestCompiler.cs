@@ -15,7 +15,7 @@ namespace uVM.Compiler
             var filehdr = new FileHeader(0);
             var functionTbl = new FunctionTable(2);
 
-            var mainfunc = new FunctionHeader(8, 6, null, 0);
+            var mainfunc = new FunctionHeader(8, 8, null, 0);
             var func2 = new FunctionHeader(1, 4, null, 1);
 
             using (var ms = new MemoryStream())
@@ -29,8 +29,11 @@ namespace uVM.Compiler
                 bw.Write(DoubleInt2Long(1, 1, 0));
                 bw.Write(0); // PUSH 5
                 bw.Write(DoubleInt2Long(1, 1, 5));
-                bw.Write(12); // SETELEM 23
+                bw.Write(12); // SETELEM 
                 bw.Write(DoubleInt2Long(1, 1, 0));
+                bw.Write(0); // PUSH 0
+                bw.Write(DoubleInt2Long(1, 1, 0));
+                bw.Write(13); // GETELEM
                 bw.Write(1); // RET
 
                 mainfunc.Code = ms.ToArray();

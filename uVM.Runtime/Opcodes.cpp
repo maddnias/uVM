@@ -196,9 +196,9 @@ void op_ijmp(Instruction *instr, FunctionContext *func) {
 
 void op_alloc(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	int ptr = allocateMemory(*(unsigned int*)instr->operand, ctx->globalMemoryBlock);
-	if (ptr == -1)
-		// failed to allocate memory
-		return;
+#ifdef _DEBUG
+	assert(ptr >= 0 && ptr <= 4096);
+#endif
 	stackPush(func, ptr, instr->type);
 }
 
@@ -225,6 +225,9 @@ void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	int initSize = stackPop(func).value;
 	int pBase = allocateMemory(initSize * elementSize, ctx->globalMemoryBlock);
 
+#ifdef _DEBUG
+	assert(pBase >= 0 && pBase <= 4096);
+#endif
 	stackPush(func, pBase, instr->type);
 }
 
@@ -241,9 +244,22 @@ void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) 
 	// copy value on stack to [pArr + (elementSize * index)] in global memory
 	memcpy((char*)ctx->globalMemoryBlock->mem + (elementIdx.value * elementSize), &value.value, elementSize);
 
+#ifdef _DEBUG
 	long long testVal = 0;
+	memcpy(&testVal, (char*)ctx->globalMemoryBlock->mem + pArray.value + (elementIdx.value * elementSize), elementSize);
+	assert(testVal == value.value);
+	assert((elementSize * elementIdx.value) < getPaddedPointerDataSize(pArray.value, ctx->globalMemoryBlock));
+#endif
+}
 
-	memcpy(&testVal, (char*)ctx->globalMemoryBlock->mem + (elementIdx.value * elementSize), elementSize);
+void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+	StackEntry elementIdx = stackPop(func);
+	StackEntry pArray = stackPop(func);
 
-	return;
+	DataType elementType = (DataType)getMainType(&pArray.type);
+	int elementSize = getElementSize(elementType);
+
+	long long value = 0;
+	memcpy(&value, (char*)ctx->globalMemoryBlock->mem + pArray.value + (elementIdx.value * elementSize), elementSize);
+	stackPush(func, value, pArray.type);
 }

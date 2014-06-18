@@ -55,6 +55,9 @@ int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext
 	case SETELEM:
 		op_setelem(instr, func, ctx);
 		break;
+	case GETELEM:
+		op_getelem(instr, func, ctx);
+		break;
 	case RET:
 		op_ret(instr, func);
 		return 0;
@@ -135,6 +138,11 @@ int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
 		instr->opcode = SETELEM;
 		instr->stackBehaviour = Pop2;
 		readOperand(code, ip, instr);
+		break;
+	case GETELEM:
+		instr->hasOperand = true;
+		instr->opcode = GETELEM;
+		instr->stackBehaviour = Pop1;
 		break;
 	default:
 		return 0;

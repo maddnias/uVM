@@ -3,6 +3,7 @@
 
 int allocateMemory(int size, MemoryBlock *mem);
 int deallocateMemory(int ptr, MemoryBlock *mem);
+int getPaddedPointerDataSize(int ptr, MemoryBlock *mem);
 
 #pragma once
 const int MSLOT_SIZE = 8;

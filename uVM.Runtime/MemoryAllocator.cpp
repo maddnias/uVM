@@ -63,6 +63,7 @@ int locateFreeMemorySlot(int requiredSlots, MemoryBlock *mem) {
 int allocateMemory(int size, MemoryBlock *mem) {
 	int pad = 0;
 
+	// pad until size is a multiple of MSLOT_SIZE
 	if (size % MSLOT_SIZE != 0)
 		while ((size + ++pad) % MSLOT_SIZE != 0);
 
@@ -72,6 +73,10 @@ int allocateMemory(int size, MemoryBlock *mem) {
 		return -1;
 
 	setMemorySlotStates(size, pad, requiredSlots, mem, initMemorySlot);
+#ifdef _DEBUG
+	assert(mem->memorySlots[initMemorySlot].state == MSLOT_POINTERBASE);
+	assert(mem->memorySlots[initMemorySlot].size == requiredSlots);
+#endif
 	return initMemorySlot * MSLOT_SIZE;
 }
 
@@ -90,4 +95,18 @@ int deallocateMemory(int ptr, MemoryBlock *mem) {
 		mem->memorySlots[slotIdx + i].state = MSLOT_FREE;
 
 	return 0;
+}
+
+int getPaddedPointerDataSize(int ptr, MemoryBlock *mem) {
+	if (ptr % MSLOT_SIZE != 0)
+		// invalid pointer
+		return -1;
+
+	int slotIdx = ptr / MSLOT_SIZE;
+	MemorySlot memSlot = mem->memorySlots[slotIdx];
+	if (memSlot.state != MSLOT_POINTERBASE)
+		// invalid pointer
+		return -1;
+
+	return memSlot.size * MSLOT_SIZE;
 }

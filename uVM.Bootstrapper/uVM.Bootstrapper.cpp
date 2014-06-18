@@ -27,6 +27,9 @@ void executeImpl(RuntimeContext *ctx) {
 	FuncHeader *epHdr = ctx->funcTable->table[0];
 	FunctionContext *func = createFunction(epHdr, ctx);
 	executeFunction(func, ctx);
+#ifdef _DEBUG
+	getchar();
+#endif
 }
 
 RuntimeContext *initializeRuntimeFromFile(char *filePath) {

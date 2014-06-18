@@ -33,6 +33,7 @@ enum OpCode {
 	RLOC,
 	MKARR,
 	SETELEM,
+	GETELEM,
 };
 
 enum DataType {

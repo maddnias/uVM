@@ -12,7 +12,7 @@ RuntimeContext *createRuntimeContext(char *file) {
 	ctx->globalMemoryBlock = (MemoryBlock*)malloc(sizeof(MemoryBlock));
 	ctx->globalMemoryBlock->mem = malloc(4096);
 
-	for (int i = 0; i < (4096 / 8); i++)
+	for (int i = 0; i < (4096 / MSLOT_SIZE); i++)
 		ctx->globalMemoryBlock->memorySlots[i].state = MSLOT_FREE;
 
 	ctx->isEOF = false;
