@@ -58,6 +58,12 @@ int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext
 	case GETELEM:
 		op_getelem(instr, func, ctx);
 		break;
+	case SETVAR:
+		op_setvar(instr, func);
+		break;
+	case GETVAR:
+		op_getvar(instr, func);
+		break;
 	case RET:
 		op_ret(instr, func);
 		return 0;
@@ -144,6 +150,18 @@ int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
 		instr->opcode = GETELEM;
 		instr->stackBehaviour = Pop1;
 		break;
+	case SETVAR:
+		instr->hasOperand = true;
+		instr->opcode = SETVAR;
+		instr->stackBehaviour = Pop1;
+		readOperand(code, ip, instr);
+		break;
+	case GETVAR:
+		instr->hasOperand = true;
+		instr->opcode = GETVAR;
+		instr->stackBehaviour = Push1;
+		readOperand(code, ip, instr);
+		break;
 	default:
 		return 0;
 	}
@@ -162,16 +180,26 @@ FunctionContext *createFunction(FuncHeader *hdr, RuntimeContext *ctx) {
 	container.container = (int)hdr->returnType;
 	func->returnType = container;
 	func->parameterCount = hdr->paramCount;
+	func->variableCount = hdr->variableCount;
 
 	if (func->parameterCount > 0) {
 		func->parameters = (Parameter**)malloc(sizeof(Parameter*));
 		for (int i = 0; i < hdr->paramCount; i++) {
 			func->parameters[i] = (Parameter*)malloc(sizeof(Parameter));
 			func->parameters[i]->index = i;
-			container.container = *hdr->paramTypes[i];
+			container.container = hdr->paramTable->table[i]->typeContainer;
 			func->parameters[i]->type = container;
 		}
 	}
 
+	if (func->variableCount > 0) {
+		func->variables = (Variable**)malloc(sizeof(Variable*));
+		for (int i = 0; i < hdr->variableCount; i++) {
+			func->variables[i] = (Variable*)malloc(sizeof(Variable));
+			func->variables[i]->index = i;
+			container.container = hdr->variableTable->table[i]->typeContainer;
+			func->variables[i]->type = container;
+		}
+	}
 	return func;
 }

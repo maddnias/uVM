@@ -4,10 +4,32 @@
 
 #pragma once
 
+struct ParamHeader {
+	int index;
+	int typeContainer;
+};
+
+struct ParamTable {
+	unsigned int tableCount;
+	ParamHeader **table;
+};
+
+struct VariableHeader {
+	int index;
+	int typeContainer;
+};
+
+struct VariableTable {
+	unsigned int tableCount;
+	VariableHeader **table;
+};
+
 struct FuncHeader {
 	char returnType;
 	unsigned int paramCount;
-	int **paramTypes;
+	ParamTable *paramTable;
+	unsigned int variableCount;
+	VariableTable *variableTable;
 	int opCount;
 	int codeSize;
 	char *code;
@@ -17,6 +39,7 @@ struct FuncTable {
 	unsigned int tableCount;
 	FuncHeader **table;
 };
+
 
 struct MemorySlot {
 	int state;

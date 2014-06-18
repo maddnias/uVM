@@ -11,7 +11,7 @@ namespace uVM.CompilerTest
     {
         static void Main(string[] args)
         {
-            TestCompiler.Compile();
+            TestCompiler.CompileTest2();
         }
     }
 }

@@ -31,7 +31,6 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 	// read low 32 bits
 	TypeContainer container;
 	container.container = (int)(*(long long*)(code + *ip) >> 32);
-
 	instr->type = container;
 
 	void *operand = NULL;
@@ -55,10 +54,6 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 		}
 	}
 
-	if (operand == NULL) {
-		// ???
-		return;
-	}
 	instr->operand = operand;
 }
 
@@ -93,55 +88,47 @@ void op_ret(Instruction *instr, FunctionContext *func) {
 }
 
 void op_add(Instruction *instr, FunctionContext *func) {
-	TypeContainer type1 = getTopStackType(func);
-	long long val1 = stackPop(func).value;
-	TypeContainer type2 = getTopStackType(func);
-	long long val2 = stackPop(func).value;
+	StackEntry val1 = stackPop(func);
+	StackEntry val2 = stackPop(func);
 
-	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
+	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 + val1, instr->type);
+
+	stackPush(func, val1.value + val2.value, instr->type);
 }
 
 void op_sub(Instruction *instr, FunctionContext *func) {
-	TypeContainer type1 = getTopStackType(func);
-	long long val1 = stackPop(func).value;
-	TypeContainer type2 = getTopStackType(func);
-	long long val2 = stackPop(func).value;
+	StackEntry val1 = stackPop(func);
+	StackEntry val2 = stackPop(func);
 
-	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
+	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 - val1, instr->type);
+
+	stackPush(func, val1.value - val2.value, instr->type);
 }
 
 void op_mul(Instruction *instr, FunctionContext *func) {
-	TypeContainer type1 = getTopStackType(func);
-	long long val1 = stackPop(func).value;
-	TypeContainer type2 = getTopStackType(func);
-	long long val2 = stackPop(func).value;
+	StackEntry val1 = stackPop(func);
+	StackEntry val2 = stackPop(func);
 
-	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
+	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 * val1, type1);
+
+	stackPush(func, val1.value * val2.value, instr->type);
 }
 
 void op_div(Instruction *instr, FunctionContext *func) {
-	TypeContainer type1 = getTopStackType(func);
-	long long val1 = stackPop(func).value;
-	TypeContainer type2 = getTopStackType(func);
-	long long val2 = stackPop(func).value;
+	StackEntry val1 = stackPop(func);
+	StackEntry val2 = stackPop(func);
 
-	if (getMainType(&type1) == DT_STRING || getMainType(&type2) == DT_STRING)
+	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-	// swap places of val1 and val2 because of stack structure
-	stackPush(func, val2 / val1, instr->type);
+
+	stackPush(func, val1.value / val2.value, instr->type);
 }
 
 void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
@@ -262,4 +249,28 @@ void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) 
 	long long value = 0;
 	memcpy(&value, (char*)ctx->globalMemoryBlock->mem + pArray.value + (elementIdx.value * elementSize), elementSize);
 	stackPush(func, value, pArray.type);
+}
+
+void op_setvar(Instruction *instr, FunctionContext *func) {
+	int varIdx = *(int*)instr->operand;
+	if (varIdx < 0 || varIdx > func->variableCount)
+		// invalid index
+		return;
+
+	// more checks?
+
+	StackEntry value = stackPop(func);
+	func->variables[varIdx]->type = value.type;
+	func->variables[varIdx]->value = value.value;
+}
+
+void op_getvar(Instruction *instr, FunctionContext *func) {
+	int varIdx = *(int*)instr->operand;
+	if (varIdx < 0 || varIdx > func->variableCount)
+		// invalid index
+		return;
+
+	// more checks?
+
+	stackPush(func, func->variables[varIdx]->value, func->variables[varIdx]->type);
 }

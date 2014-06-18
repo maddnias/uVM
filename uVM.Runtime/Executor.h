@@ -34,6 +34,8 @@ enum OpCode {
 	MKARR,
 	SETELEM,
 	GETELEM,
+	SETVAR,
+	GETVAR
 };
 
 enum DataType {
@@ -70,6 +72,12 @@ struct Parameter {
 	TypeContainer type;
 };
 
+struct Variable {
+	int index;
+	long long value;
+	TypeContainer type;
+};
+
 struct FunctionContext {
 	int next;
 	int opCount;
@@ -78,6 +86,8 @@ struct FunctionContext {
 	StackFrame **frames;
 	Parameter **parameters;
 	int parameterCount;
+	Variable **variables;
+	int variableCount;
 	int codeSize;
 	char *code;
 	unsigned int localIp;

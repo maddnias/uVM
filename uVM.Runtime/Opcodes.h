@@ -16,3 +16,5 @@ void op_rarg(Instruction *instr, FunctionContext *func);
 void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
 void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
 void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
+void op_setvar(Instruction *instr, FunctionContext *func);
+void op_getvar(Instruction *instr, FunctionContext *func);

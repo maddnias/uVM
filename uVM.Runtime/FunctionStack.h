@@ -8,3 +8,4 @@ TypeContainer getTopStackType(FunctionContext *func);
 StackEntry stackPeek(FunctionContext *func);
 StackEntry stackPeek(FunctionContext *func, int depth);
 int getStackSize(FunctionContext *func);
+int verifyStack(FunctionContext *func, StackBehaviour behaviour);

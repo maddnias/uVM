@@ -58,3 +58,25 @@ StackEntry stackPeek(FunctionContext *func, int depth) {
 int getStackSize(FunctionContext *func) {
 	return func->stackTop ;
 }
+
+int verifyStack(FunctionContext *func, StackBehaviour behaviour) {
+	switch (behaviour)
+	{
+	case Push1:
+		if (func->stackTop + 1 > MAX_STACK)
+			return -1;
+	case Push2:
+		if (func->stackTop + 2 > MAX_STACK)
+			return -1;
+		break;
+	case Pop1:
+		if (func->stackTop - 1 < 0)
+			return -1;
+		break;
+	case Pop2:
+		if (func->stackTop - 2 < 0)
+			return -1;
+		break;
+	}
+	return 0;
+}
