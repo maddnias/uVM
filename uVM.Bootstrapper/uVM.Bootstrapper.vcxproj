@@ -55,7 +55,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>C:\Users\mattias\Documents\Visual Studio 2013\Projects\uVM\uVM.Runtime;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-      <CompileAs>Default</CompileAs>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -82,9 +82,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="ErrorCodes.h" />
     <ClInclude Include="Metadata.h" />
     <ClInclude Include="stdafx.h" />
@@ -92,12 +89,12 @@
     <ClInclude Include="uVM.Bootstrapper.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Metadata.cpp" />
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="Metadata.c" />
+    <ClCompile Include="stdafx.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="uVM.Bootstrapper.cpp" />
+    <ClCompile Include="uVM.Bootstrapper.c" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\uVM.Runtime\uVM.Runtime.vcxproj">

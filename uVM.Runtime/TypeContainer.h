@@ -5,6 +5,6 @@ struct TypeContainer {
 	int container;
 };
 
-int getMainType(TypeContainer *container);
-int getSubType(TypeContainer *container);
-int hasSubType(TypeContainer *container);
+int getMainType(struct TypeContainer *container);
+int getSubType(struct TypeContainer *container);
+int hasSubType(struct TypeContainer *container);

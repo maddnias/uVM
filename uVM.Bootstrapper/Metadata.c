@@ -2,22 +2,22 @@
 #include "Metadata.h"
 #include "ErrorCodes.h"
 
-FuncTable *readFuncTable(char *fileBuff, unsigned int *pos);
-ParamTable *readParamTable(char *fileBuff, unsigned int *pos);
-VariableTable *readVariableTable(char *fileBuff, unsigned int *pos);
+struct FuncTable *readFuncTable(char *fileBuff, unsigned int *pos);
+struct ParamTable *readParamTable(char *fileBuff, unsigned int *pos);
+struct VariableTable *readVariableTable(char *fileBuff, unsigned int *pos);
 
-int finalizeRuntimeContext(RuntimeContext *ctx) {
+int finalizeRuntimeContext(struct RuntimeContext *ctx) {
 	readMetadata(ctx, ctx->file);
 
 	return 0;
 }
 
-int readMetadata(RuntimeContext *ctx, char *fileBuff) {
+int readMetadata(struct RuntimeContext *ctx, char *fileBuff) {
 	unsigned int i = 0;
 
-	FileHeader *fileHdr = (FileHeader*)(fileBuff);
+	struct FileHeader *fileHdr = (struct FileHeader*)(fileBuff);
 	// advance over file header
-	i += sizeof(FileHeader);
+	i += sizeof(struct FileHeader);
 
 	ctx->funcTable = readFuncTable(fileBuff, &i);
 	*ctx->ip = 0;
@@ -25,17 +25,17 @@ int readMetadata(RuntimeContext *ctx, char *fileBuff) {
 	return 0;
 }
 
-FuncTable *readFuncTable(char *fileBuff, unsigned int *pos) {
+struct FuncTable *readFuncTable(char *fileBuff, unsigned int *pos) {
 	int funcCount = *(int*)(fileBuff + *pos);
 
 	// advance over funcCount
 	*pos += sizeof(int);
 
-	FuncTable *tbl = (FuncTable*)malloc(sizeof(FuncTable));
-	tbl->table = (FuncHeader**)malloc(sizeof(FuncHeader*));
+	struct FuncTable *tbl = (struct FuncTable*)malloc(sizeof(struct FuncTable));
+	tbl->table = (struct FuncHeader**)malloc(sizeof(struct FuncHeader*));
 
 	for (int i = 0; i < funcCount; i++) {
-		tbl->table[i] = (FuncHeader*)malloc(sizeof(FuncHeader));
+		tbl->table[i] = (struct FuncHeader*)malloc(sizeof(struct FuncHeader));
 		tbl->table[i]->returnType = *(char*)(fileBuff + *pos);
 		*pos += 1;
 
@@ -56,15 +56,15 @@ FuncTable *readFuncTable(char *fileBuff, unsigned int *pos) {
 	return tbl;
 }
 
-ParamTable *readParamTable(char *fileBuff, unsigned int *pos) {
-	ParamTable *tbl = (ParamTable*)malloc(sizeof(ParamTable));
-	tbl->table = (ParamHeader**)malloc(sizeof(ParamHeader*));
+struct ParamTable *readParamTable(char *fileBuff, unsigned int *pos) {
+	struct ParamTable *tbl = (struct ParamTable*)malloc(sizeof(struct ParamTable));
+	tbl->table = (struct ParamHeader**)malloc(sizeof(struct ParamHeader*));
 
 	tbl->tableCount = *(unsigned int*)(fileBuff + *pos);
 	*pos += sizeof(unsigned int);
 
 	for (int i = 0; i < tbl->tableCount; i++) {
-		tbl->table[i] = (ParamHeader*)malloc(sizeof(ParamHeader));
+		tbl->table[i] = (struct ParamHeader*)malloc(sizeof(struct ParamHeader));
 		tbl->table[i]->index = i;
 		tbl->table[i]->typeContainer = *(int*)(fileBuff + *pos);
 		*pos += 4;
@@ -73,15 +73,15 @@ ParamTable *readParamTable(char *fileBuff, unsigned int *pos) {
 	return tbl;
 }
 
-VariableTable *readVariableTable(char *fileBuff, unsigned int *pos) {
-	VariableTable *tbl = (VariableTable*)malloc(sizeof(VariableTable));
-	tbl->table = (VariableHeader**)malloc(sizeof(VariableHeader*));
+struct VariableTable *readVariableTable(char *fileBuff, unsigned int *pos) {
+	struct VariableTable *tbl = (struct VariableTable*)malloc(sizeof(struct VariableTable));
+	tbl->table = (struct VariableHeader**)malloc(sizeof(struct VariableHeader*));
 
 	tbl->tableCount = *(unsigned int*)(fileBuff + *pos);
 	*pos += sizeof(unsigned int);
 
 	for (int i = 0; i < tbl->tableCount; i++) {
-		tbl->table[i] = (VariableHeader*)malloc(sizeof(VariableHeader));
+		tbl->table[i] = (struct VariableHeader*)malloc(sizeof(struct VariableHeader));
 		tbl->table[i]->index = i;
 		tbl->table[i]->typeContainer = *(int*)(fileBuff + *pos);
 		*pos += 4;

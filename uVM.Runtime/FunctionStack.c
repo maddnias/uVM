@@ -1,17 +1,19 @@
 #include "stdafx.h"
 #include "FunctionStack.h"
 
-TypeContainer getTopStackType(FunctionContext *func) {
+const int MAX_STACK = 32;
+
+struct TypeContainer *getTopStackType(struct FunctionContext *func) {
 	return func->funcStack[func->stackTop - 1].type;
 }
 
-void stackPush(FunctionContext *func, long long value, TypeContainer type) {
+void stackPush(struct FunctionContext *func, long long value, struct TypeContainer *type) {
 	if (func->stackTop + 1 > MAX_STACK)
 		// stack overflow
 		return;
 
 	long long paddedValue = 0;
-	switch (getMainType(&type)) {
+	switch (getMainType(type)) {
 	case DT_SHORT:
 	case DT_USHORT:
 		memcpy(&paddedValue, &value, 2);
@@ -30,36 +32,36 @@ void stackPush(FunctionContext *func, long long value, TypeContainer type) {
 		break;
 	}
 
-	StackEntry *entry = (StackEntry*)malloc(sizeof(StackEntry));
+	struct StackEntry *entry = (struct StackEntry*)malloc(sizeof(struct StackEntry));
 	entry->type = type;
 	entry->value = paddedValue;
 	func->funcStack[func->stackTop] = *entry;
 	func->stackTop += 1;;
 }
 
-StackEntry stackPop(FunctionContext *func) {
+struct StackEntry stackPop(struct FunctionContext *func) {
 	// TODO: safety checks
 	func->stackTop -= 1;
-	StackEntry entry = func->funcStack[func->stackTop];
+	struct StackEntry entry = func->funcStack[func->stackTop];
 
 	return entry;
 }
 
-StackEntry stackPeek(FunctionContext *func) {
-	StackEntry entry = func->funcStack[func->stackTop - 1];
+struct StackEntry *stackPeekTop(struct FunctionContext *func) {
+	struct StackEntry *entry = &func->funcStack[func->stackTop - 1];
 	return entry;
 }
 
-StackEntry stackPeek(FunctionContext *func, int depth) {
-	StackEntry entry = func->funcStack[func->stackTop - depth];
+struct StackEntry *stackPeek(struct FunctionContext *func, int depth) {
+	struct StackEntry *entry = &func->funcStack[func->stackTop - depth];
 	return entry;
 }
 
-int getStackSize(FunctionContext *func) {
+int getStackSize(struct FunctionContext *func) {
 	return func->stackTop ;
 }
 
-int verifyStack(FunctionContext *func, StackBehaviour behaviour) {
+int verifyStack(struct FunctionContext *func, enum StackBehaviour behaviour) {
 	switch (behaviour)
 	{
 	case Push1:

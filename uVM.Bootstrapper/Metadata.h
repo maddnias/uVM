@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "uVM.Runtime.h"
 
-int finalizeRuntimeContext(RuntimeContext *ctx);
-int readMetadata(RuntimeContext *ctx, char *fileBuff);
+int finalizeRuntimeContext(struct RuntimeContext *ctx);
+int readMetadata(struct RuntimeContext *ctx, char *fileBuff);
 
 #pragma once
 struct FileHeader {

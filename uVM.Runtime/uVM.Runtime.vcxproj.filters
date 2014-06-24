@@ -15,7 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
     <Text Include="..\..\..\..\uVM notes.txt" />
   </ItemGroup>
   <ItemGroup>
@@ -45,28 +44,28 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="dllmain.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uVM.Runtime.cpp">
+    <ClCompile Include="Executor.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dllmain.cpp">
+    <ClCompile Include="FunctionStack.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Executor.cpp">
+    <ClCompile Include="MemoryAllocator.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Opcodes.cpp">
+    <ClCompile Include="Opcodes.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MemoryAllocator.cpp">
+    <ClCompile Include="stdafx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="FunctionStack.cpp">
+    <ClCompile Include="TypeContainer.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TypeContainer.cpp">
+    <ClCompile Include="uVM.Runtime.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

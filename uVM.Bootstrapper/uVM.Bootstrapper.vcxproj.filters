@@ -15,9 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -35,13 +32,13 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="Metadata.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="uVM.Bootstrapper.cpp">
+    <ClCompile Include="stdafx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Metadata.cpp">
+    <ClCompile Include="uVM.Bootstrapper.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

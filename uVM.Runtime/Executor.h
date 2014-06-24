@@ -2,8 +2,10 @@
 #include "uVM.Runtime.h"
 #include "TypeContainer.h"
 
+extern const int MAX_STACK;
+
 #pragma once
-const int MAX_STACK = 32;
+
 
 struct StackFrame {
 	unsigned int stackCount;
@@ -35,7 +37,8 @@ enum OpCode {
 	SETELEM,
 	GETELEM,
 	SETVAR,
-	GETVAR
+	GETVAR,
+	JLE,
 };
 
 enum DataType {
@@ -53,47 +56,46 @@ enum DataType {
 
 struct Instruction {
 	unsigned int offset;
-	OpCode opcode;
+	enum OpCode opcode;
 	BOOL hasOperand;
 	int operandSize;
-	StackBehaviour stackBehaviour;
+	enum StackBehaviour stackBehaviour;
 	void *operand;
-	TypeContainer type;
+	struct TypeContainer *type;
 };
 
 struct StackEntry {
 	long long value;
-	TypeContainer type;
+	struct TypeContainer *type;
 };
 
 struct Parameter {
 	int index;
 	long long value;
-	TypeContainer type;
+	struct TypeContainer *type;
 };
 
 struct Variable {
 	int index;
 	long long value;
-	TypeContainer type;
+	struct TypeContainer *type;
 };
 
 struct FunctionContext {
 	int next;
 	int opCount;
 	char stackTop;
-	StackEntry funcStack[MAX_STACK];
-	StackFrame **frames;
-	Parameter **parameters;
+	struct StackEntry funcStack[32];
 	int parameterCount;
-	Variable **variables;
 	int variableCount;
 	int codeSize;
 	char *code;
 	unsigned int localIp;
 	long returnValue;
-	TypeContainer returnType;
+	struct TypeContainer *returnType;
+	struct Parameter *parameters[1];
+	struct Variable *variables[1];
 };
 
-void executeFunction(FunctionContext *func, RuntimeContext *ctx);
-FunctionContext *createFunction(FuncHeader *hdr, RuntimeContext *ctx);
+void executeFunction(struct FunctionContext *func, struct RuntimeContext *ctx);
+struct FunctionContext *createFunction(struct FuncHeader *hdr, struct RuntimeContext *ctx);

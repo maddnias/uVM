@@ -3,14 +3,14 @@
 #include "Executor.h"
 #include "Opcodes.h"
 
-int readInstruction(char *code, unsigned int *ip, Instruction *instr);
-int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
+int readInstruction(char *code, unsigned int *ip, struct Instruction *instr);
+int executeInstruction(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
 
-void executeFunction(FunctionContext *func, RuntimeContext *ctx) {
-	Instruction **opcodes = (Instruction**)malloc(sizeof(Instruction**));
+void executeFunction(struct FunctionContext *func, struct RuntimeContext *ctx) {
+	struct Instruction **opcodes = (struct Instruction**)malloc(sizeof(struct Instruction*) * func->opCount);
 
 	for (int i = 0; i <= func->opCount; i++) {
-		opcodes[i] = (Instruction*)malloc(sizeof(Instruction));
+		opcodes[i] = (struct Instruction*)malloc(sizeof(struct Instruction));
 	}
 
 	for (int i = 0; i < func->opCount; i++) {
@@ -23,7 +23,7 @@ void executeFunction(FunctionContext *func, RuntimeContext *ctx) {
 	}
 }
 
-int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+int executeInstruction(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
 	switch (instr->opcode) {
 	case PUSH:
 		op_push(instr, func);
@@ -64,6 +64,9 @@ int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext
 	case GETVAR:
 		op_getvar(instr, func);
 		break;
+	case JLE:
+		op_jle(instr, func);
+		break;
 	case RET:
 		op_ret(instr, func);
 		return 0;
@@ -77,89 +80,95 @@ int executeInstruction(Instruction *instr, FunctionContext *func, RuntimeContext
 	return 1;
 }
 
-int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
-	OpCode opcode = (OpCode)code[*ip];
-	*ip += sizeof(OpCode);
+int readInstruction(char *code, unsigned int *ip, struct Instruction *instr) {
+	enum OpCode opcode = (enum OpCode)code[*ip];
+	*ip += sizeof(enum OpCode);
 	
 	instr->offset = *ip;
 
 	switch (opcode) {
 	case PUSH:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = PUSH;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
 	case ADD:
-		instr->hasOperand = false;
+		instr->hasOperand = FALSE;
 		instr->opcode = ADD;
 		instr->stackBehaviour = Push1;
 		break;
 	case SUB:
-		instr->hasOperand = false;
+		instr->hasOperand = FALSE;
 		instr->opcode = SUB;
 		instr->stackBehaviour = Push1;
 		break;
 	case MUL:
-		instr->hasOperand = false;
+		instr->hasOperand = FALSE;
 		instr->opcode = MUL;
 		instr->stackBehaviour = Push1;
 		break;
 	case DIV:
-		instr->hasOperand = false;
+		instr->hasOperand = FALSE;
 		instr->opcode = DIV;
 		instr->stackBehaviour = Push1;
 		break;
 	case RET:
-		instr->hasOperand = false;
+		instr->hasOperand = FALSE;
 		instr->opcode = RET;
 		instr->stackBehaviour = None;
 		break;
 	case LCALL:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = LCALL;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
 	case IJMP:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = IJMP;
 		instr->stackBehaviour = None;
 		readOperand(code, ip, instr);
 		break;
 	case RARG:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = RARG;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
 	case MKARR: 
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = MKARR;
 		instr->stackBehaviour = Push1;
 		readOperand(code, ip, instr);
 		break;
 	case SETELEM:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = SETELEM;
 		instr->stackBehaviour = Pop2;
 		readOperand(code, ip, instr);
 		break;
 	case GETELEM:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = GETELEM;
 		instr->stackBehaviour = Pop1;
 		break;
 	case SETVAR:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = SETVAR;
 		instr->stackBehaviour = Pop1;
 		readOperand(code, ip, instr);
 		break;
 	case GETVAR:
-		instr->hasOperand = true;
+		instr->hasOperand = TRUE;
 		instr->opcode = GETVAR;
 		instr->stackBehaviour = Push1;
+		readOperand(code, ip, instr);
+		break;
+	case JLE:
+		instr->hasOperand = TRUE;
+		instr->opcode = JLE;
+		instr->stackBehaviour = None;
 		readOperand(code, ip, instr);
 		break;
 	default:
@@ -169,35 +178,35 @@ int readInstruction(char *code, unsigned int *ip, Instruction *instr) {
 	return 1;
 }
 
-FunctionContext *createFunction(FuncHeader *hdr, RuntimeContext *ctx) {
-	FunctionContext *func = (FunctionContext*)malloc(sizeof(FunctionContext));
+struct FunctionContext *createFunction(struct FuncHeader *hdr, struct RuntimeContext *ctx) {
+	struct FunctionContext *func = (struct FunctionContext*)malloc(sizeof(struct FunctionContext));
 	func->codeSize = hdr->codeSize;
 	func->code = hdr->code;
 	func->localIp = 0;
 	func->stackTop = 0;
 	func->opCount = hdr->opCount;
-	TypeContainer container;
-	container.container = (int)hdr->returnType;
+	struct TypeContainer *container = (struct TypeContainer*)malloc(sizeof(struct TypeContainer));
+	container->container = (int)hdr->returnType;
 	func->returnType = container;
 	func->parameterCount = hdr->paramCount;
 	func->variableCount = hdr->variableCount;
+	func->next = 0;
+
+	func->parameters[0] = (struct Parameter*)malloc(sizeof(struct Parameter*) * func->parameterCount);
+	func->variables[0] = (struct Variable*)malloc(sizeof(struct Variable*) * func->variableCount);
 
 	if (func->parameterCount > 0) {
-		func->parameters = (Parameter**)malloc(sizeof(Parameter*));
 		for (int i = 0; i < hdr->paramCount; i++) {
-			func->parameters[i] = (Parameter*)malloc(sizeof(Parameter));
 			func->parameters[i]->index = i;
-			container.container = hdr->paramTable->table[i]->typeContainer;
+			container->container = hdr->paramTable->table[i]->typeContainer;
 			func->parameters[i]->type = container;
 		}
 	}
 
 	if (func->variableCount > 0) {
-		func->variables = (Variable**)malloc(sizeof(Variable*));
 		for (int i = 0; i < hdr->variableCount; i++) {
-			func->variables[i] = (Variable*)malloc(sizeof(Variable));
 			func->variables[i]->index = i;
-			container.container = hdr->variableTable->table[i]->typeContainer;
+			container->container = hdr->variableTable->table[i]->typeContainer;
 			func->variables[i]->type = container;
 		}
 	}

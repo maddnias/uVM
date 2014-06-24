@@ -1,10 +1,12 @@
 #include "stdafx.h"
 #include "MemoryAllocator.h"
 
-int locateFreeMemorySlot(int requiredSlots, MemoryBlock *mem);
-void setMemorySlotStates(int size, int pad, int requiredSlots, MemoryBlock *mem, int initMemSlot);
+const int MSLOT_SIZE = 8;
 
-void setMemorySlotStates(int size, int pad, int requiredSlots, MemoryBlock *mem, int initMemSlot) {
+int locateFreeMemorySlot(int requiredSlots, struct MemoryBlock *mem);
+void setMemorySlotStates(int size, int pad, int requiredSlots, struct MemoryBlock *mem, int initMemSlot);
+
+void setMemorySlotStates(int size, int pad, int requiredSlots, struct MemoryBlock *mem, int initMemSlot) {
 	for (int i = initMemSlot; i < initMemSlot + requiredSlots; i++) {
 		if (i == initMemSlot) {
 			mem->memorySlots[i].state = MSLOT_POINTERBASE;
@@ -16,7 +18,7 @@ void setMemorySlotStates(int size, int pad, int requiredSlots, MemoryBlock *mem,
 	}
 }
 
-int locateFreeMemorySlot(int requiredSlots, MemoryBlock *mem) {
+int locateFreeMemorySlot(int requiredSlots, struct MemoryBlock *mem) {
 	if (requiredSlots > 511)
 		// out of memory
 		return -1;
@@ -60,7 +62,7 @@ int locateFreeMemorySlot(int requiredSlots, MemoryBlock *mem) {
 	return -1;
 }
 
-int allocateMemory(int size, MemoryBlock *mem) {
+int allocateMemory(int size, struct MemoryBlock *mem) {
 	int pad = 0;
 
 	// pad until size is a multiple of MSLOT_SIZE
@@ -80,13 +82,13 @@ int allocateMemory(int size, MemoryBlock *mem) {
 	return initMemorySlot * MSLOT_SIZE;
 }
 
-int deallocateMemory(int ptr, MemoryBlock *mem) {
+int deallocateMemory(int ptr, struct MemoryBlock *mem) {
 	if (ptr % MSLOT_SIZE != 0)
 		// invalid pointer
 		return -1;	
 	
 	int slotIdx = ptr / MSLOT_SIZE;
-	MemorySlot memSlot = mem->memorySlots[slotIdx];
+	struct MemorySlot memSlot = mem->memorySlots[slotIdx];
 	if (memSlot.state != MSLOT_POINTERBASE)
 		// invalid pointer
 		return -1;
@@ -97,13 +99,13 @@ int deallocateMemory(int ptr, MemoryBlock *mem) {
 	return 0;
 }
 
-int getPaddedPointerDataSize(int ptr, MemoryBlock *mem) {
+int getPaddedPointerDataSize(int ptr, struct MemoryBlock *mem) {
 	if (ptr % MSLOT_SIZE != 0)
 		// invalid pointer
 		return -1;
 
 	int slotIdx = ptr / MSLOT_SIZE;
-	MemorySlot memSlot = mem->memorySlots[slotIdx];
+	struct MemorySlot memSlot = mem->memorySlots[slotIdx];
 	if (memSlot.state != MSLOT_POINTERBASE)
 		// invalid pointer
 		return -1;

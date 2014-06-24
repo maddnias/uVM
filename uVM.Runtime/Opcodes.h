@@ -2,19 +2,20 @@
 #include "Executor.h"
 #include "MemoryAllocator.h"
 
-void readOperand(char *code, unsigned int *ip, Instruction *instr);
-void op_push(Instruction *instr, FunctionContext *func);
-void op_ret(Instruction *instr, FunctionContext *func);
-void op_add(Instruction *instr, FunctionContext *func);
-void op_sub(Instruction *instr, FunctionContext *func);
-void op_mul(Instruction *instr, FunctionContext *func);
-void op_div(Instruction *instr, FunctionContext *func);
-void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
-void op_ijmp(Instruction *instr, FunctionContext *func);
-void op_alloc(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
-void op_rarg(Instruction *instr, FunctionContext *func);
-void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
-void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
-void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx);
-void op_setvar(Instruction *instr, FunctionContext *func);
-void op_getvar(Instruction *instr, FunctionContext *func);
+void readOperand(char *code, unsigned int *ip, struct Instruction *instr);
+void op_push(struct Instruction *instr, struct FunctionContext *func);
+void op_ret(struct Instruction *instr, struct FunctionContext *func);
+void op_add(struct Instruction *instr, struct FunctionContext *func);
+void op_sub(struct Instruction *instr, struct FunctionContext *func);
+void op_mul(struct Instruction *instr, struct FunctionContext *func);
+void op_div(struct Instruction *instr, struct FunctionContext *func);
+void op_lcall(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
+void op_ijmp(struct Instruction *instr, struct FunctionContext *func);
+void op_alloc(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
+void op_rarg(struct Instruction *instr, struct FunctionContext *func);
+void op_mkarr(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
+void op_setelem(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
+void op_getelem(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx);
+void op_setvar(struct Instruction *instr, struct FunctionContext *func);
+void op_getvar(struct Instruction *instr, struct FunctionContext *func);
+void op_jle(struct Instruction *instr, struct FunctionContext *func);

@@ -11,7 +11,7 @@ struct ParamHeader {
 
 struct ParamTable {
 	unsigned int tableCount;
-	ParamHeader **table;
+	struct ParamHeader **table;
 };
 
 struct VariableHeader {
@@ -21,15 +21,15 @@ struct VariableHeader {
 
 struct VariableTable {
 	unsigned int tableCount;
-	VariableHeader **table;
+	struct VariableHeader **table;
 };
 
 struct FuncHeader {
 	char returnType;
 	unsigned int paramCount;
-	ParamTable *paramTable;
+	struct ParamTable *paramTable;
 	unsigned int variableCount;
-	VariableTable *variableTable;
+	struct VariableTable *variableTable;
 	int opCount;
 	int codeSize;
 	char *code;
@@ -37,7 +37,7 @@ struct FuncHeader {
 
 struct FuncTable {
 	unsigned int tableCount;
-	FuncHeader **table;
+	struct FuncHeader **table;
 };
 
 
@@ -48,16 +48,16 @@ struct MemorySlot {
 
 struct MemoryBlock {
 	void *mem;
-	MemorySlot memorySlots[512];
+	struct MemorySlot memorySlots[512];
 };
 
 struct RuntimeContext {
-	FuncTable *funcTable;
+	struct FuncTable *funcTable;
 	unsigned int *ip;
-	MemoryBlock *globalMemoryBlock;
+	struct MemoryBlock *globalMemoryBlock;
 	char *file;
 	char *code;
 	BOOL isEOF;
 };
 
-RuntimeContext *createRuntimeContext(char *file);
+struct RuntimeContext *createRuntimeContext(char *file);

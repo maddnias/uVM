@@ -1,12 +1,13 @@
 #include "stdafx.h"
 #include "uVM.Runtime.h"
 
-int allocateMemory(int size, MemoryBlock *mem);
-int deallocateMemory(int ptr, MemoryBlock *mem);
-int getPaddedPointerDataSize(int ptr, MemoryBlock *mem);
+int allocateMemory(int size, struct MemoryBlock *mem);
+int deallocateMemory(int ptr, struct MemoryBlock *mem);
+int getPaddedPointerDataSize(int ptr, struct MemoryBlock *mem);
+extern const int MSLOT_SIZE;
 
 #pragma once
-const int MSLOT_SIZE = 8;
+
 
 enum MemorySlotType {
 	MSLOT_FREE = 0,

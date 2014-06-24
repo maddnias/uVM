@@ -3,10 +3,10 @@
 #include "FunctionStack.h"
 #include "TypeContainer.h"
 
-int fillFunctionParameters(FunctionContext *caller, FunctionContext *callee);
-int getElementSize(DataType type);
+int fillFunctionParameters(struct FunctionContext *caller, struct FunctionContext *callee);
+int getElementSize(enum DataType type);
 
-int getElementSize(DataType type) {
+int getElementSize(enum DataType type) {
 	switch (type)
 	{
 	case DT_SHORT:
@@ -27,10 +27,10 @@ int getElementSize(DataType type) {
 	}
 }
 
-void readOperand(char *code, unsigned int *ip, Instruction *instr) {
+void readOperand(char *code, unsigned int *ip, struct Instruction *instr) {
 	// read low 32 bits
-	TypeContainer container;
-	container.container = (int)(*(long long*)(code + *ip) >> 32);
+	struct TypeContainer *container = (struct TypeContainer*)malloc(sizeof(struct TypeContainer));
+	container->container = (int)(*(long long*)(code + *ip) >> 32);
 	instr->type = container;
 
 	void *operand = NULL;
@@ -40,8 +40,8 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 	//}
 	 {
 		// read value from the 64 bits following initial operand
-		if (getMainType(&instr->type) == DT_LONG ||
-			getMainType(&instr->type) == DT_ULONG) {
+		if (getMainType(instr->type) == DT_LONG ||
+			getMainType(instr->type) == DT_ULONG) {
 			operand = (long long*)malloc(sizeof(long long));
 			*(long long*)operand = *(long long*)(code + *ip + 8);
 			*ip += 16;
@@ -57,8 +57,8 @@ void readOperand(char *code, unsigned int *ip, Instruction *instr) {
 	instr->operand = operand;
 }
 
-void op_push(Instruction *instr, FunctionContext *func) {
-	switch (getMainType(&instr->type)) {
+void op_push(struct Instruction *instr, struct FunctionContext *func) {
+	switch (getMainType(instr->type)) {
 	case DT_SHORT:
 		stackPush(func, *(short*)instr->operand, instr->type);
 		break;
@@ -80,65 +80,65 @@ void op_push(Instruction *instr, FunctionContext *func) {
 	}
 }
 
-void op_ret(Instruction *instr, FunctionContext *func) {
+void op_ret(struct Instruction *instr, struct FunctionContext *func) {
 	// there might not be a value on top of stack if
 	// the return type is a void
-	if (getMainType(&func->returnType) != DT_VOID)
+	if (getMainType(func->returnType) != DT_VOID)
 		func->returnValue = stackPop(func).value;
 }
 
-void op_add(Instruction *instr, FunctionContext *func) {
-	StackEntry val1 = stackPop(func);
-	StackEntry val2 = stackPop(func);
+void op_add(struct Instruction *instr, struct FunctionContext *func) {
+	struct StackEntry val1 = stackPop(func);
+	struct StackEntry val2 = stackPop(func);
 
-	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
+	if (getMainType(val1.type) == DT_STRING || getMainType(val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-
-	stackPush(func, val1.value + val2.value, instr->type);
+	// TODO: more type checks on values
+	stackPush(func, val1.value + val2.value, val1.type);
 }
 
-void op_sub(Instruction *instr, FunctionContext *func) {
-	StackEntry val1 = stackPop(func);
-	StackEntry val2 = stackPop(func);
+void op_sub(struct Instruction *instr, struct FunctionContext *func) {
+	struct StackEntry val1 = stackPop(func);
+	struct StackEntry val2 = stackPop(func);
 
-	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
+	if (getMainType(val1.type) == DT_STRING || getMainType(val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-
-	stackPush(func, val1.value - val2.value, instr->type);
+	// TODO: more type checks on values
+	stackPush(func, val1.value - val2.value, val1.type);
 }
 
-void op_mul(Instruction *instr, FunctionContext *func) {
-	StackEntry val1 = stackPop(func);
-	StackEntry val2 = stackPop(func);
+void op_mul(struct Instruction *instr, struct FunctionContext *func) {
+	struct StackEntry val1 = stackPop(func);
+	struct StackEntry val2 = stackPop(func);
 
-	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
+	if (getMainType(val1.type) == DT_STRING || getMainType(val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-
-	stackPush(func, val1.value * val2.value, instr->type);
+	// TODO: more type checks on values
+	stackPush(func, val1.value * val2.value, val1.type);
 }
 
-void op_div(Instruction *instr, FunctionContext *func) {
-	StackEntry val1 = stackPop(func);
-	StackEntry val2 = stackPop(func);
+void op_div(struct Instruction *instr, struct FunctionContext *func) {
+	struct StackEntry val1 = stackPop(func);
+	struct StackEntry val2 = stackPop(func);
 
-	if (getMainType(&val1.type) == DT_STRING || getMainType(&val2.type) == DT_STRING)
+	if (getMainType(val1.type) == DT_STRING || getMainType(val2.type) == DT_STRING)
 		// arithmetic on strings? think not
 		return;
-
-	stackPush(func, val1.value / val2.value, instr->type);
+	// TODO: more type checks on values
+	stackPush(func, val1.value / val2.value, val1.type);
 }
 
-void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+void op_lcall(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
 	unsigned short targetIdx = *(unsigned short*)instr->operand;
 	if (targetIdx < 0 || targetIdx >= ctx->funcTable->tableCount)
 		// out of range 
 		return;
 
-	FuncHeader *targetFuncHdr = ctx->funcTable->table[targetIdx];
-	FunctionContext *targetFunc = createFunction(targetFuncHdr, ctx);
+	struct FuncHeader *targetFuncHdr = ctx->funcTable->table[targetIdx];
+	struct FunctionContext *targetFunc = createFunction(targetFuncHdr, ctx);
 
 	if (fillFunctionParameters(func, targetFunc) != 0) {
 		// failed to fill callee parameters
@@ -149,20 +149,20 @@ void op_lcall(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 
 	// there might not be a value on top of stack if
 	// callee return type is void
-	if (getMainType(&targetFunc->returnType) != DT_VOID) {
+	if (getMainType(targetFunc->returnType) != DT_VOID) {
 		stackPush(func, targetFunc->returnValue, targetFunc->returnType);
 	}
 	free(targetFunc);
 }
 
-int fillFunctionParameters(FunctionContext *caller, FunctionContext *callee) {
+int fillFunctionParameters(struct FunctionContext *caller, struct FunctionContext *callee) {
 	// check if there are enough entries on stack
 	if (callee->parameterCount > getStackSize(caller)) {
 		return -1;
 	}
 	// check if parameter types match
 	for (int i = 0, j = callee->parameterCount; i < callee->parameterCount; i++, j--) {
-		if (getMainType(&stackPeek(caller, j).type) != getMainType(&callee->parameters[i]->type)) {
+		if (getMainType(stackPeek(caller, j)->type) != getMainType(callee->parameters[i]->type)) {
 			return -1;
 		}
 	}
@@ -174,14 +174,14 @@ int fillFunctionParameters(FunctionContext *caller, FunctionContext *callee) {
 	return 0;
 }
 
-void op_ijmp(Instruction *instr, FunctionContext *func) {
+void op_ijmp(struct Instruction *instr, struct FunctionContext *func) {
 	if (*(unsigned int*)instr->operand < 0 || *(unsigned int*)instr->operand > func->opCount)
 		// invalid offset
 		return;
 	func->next = *(unsigned int*)instr->operand;
 }
 
-void op_alloc(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
+void op_alloc(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
 	int ptr = allocateMemory(*(unsigned int*)instr->operand, ctx->globalMemoryBlock);
 #ifdef _DEBUG
 	assert(ptr >= 0 && ptr <= 4096);
@@ -189,13 +189,13 @@ void op_alloc(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	stackPush(func, ptr, instr->type);
 }
 
-void op_rarg(Instruction *instr, FunctionContext *func) {
+void op_rarg(struct Instruction *instr, struct FunctionContext *func) {
 	int argIdx = *(int*)instr->operand;
 	if (argIdx < 0 || argIdx > func->parameterCount)
 		// invalid parameter index
 		return;
 
-	Parameter param;
+	struct Parameter param;
 	for (int i = 0; i < func->parameterCount; i++)
 		if (func->parameters[i]->index == argIdx)
 			param = *func->parameters[i];
@@ -203,12 +203,12 @@ void op_rarg(Instruction *instr, FunctionContext *func) {
 	stackPush(func, param.value, instr->type);
 }
 
-void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
-	if (!hasSubType(&instr->type) || getSubType(&instr->type) != DT_ARRAY)
+void op_mkarr(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
+	if (!hasSubType(instr->type) || getSubType(instr->type) != DT_ARRAY)
 		// invalid type
 		return;
 
-	int elementSize = getElementSize((DataType)getMainType(&instr->type));
+	int elementSize = getElementSize((enum DataType)getMainType(instr->type));
 	int initSize = stackPop(func).value;
 	int pBase = allocateMemory(initSize * elementSize, ctx->globalMemoryBlock);
 
@@ -218,16 +218,19 @@ void op_mkarr(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
 	stackPush(func, pBase, instr->type);
 }
 
-void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
-	StackEntry value = stackPop(func);
-	StackEntry elementIdx = stackPop(func);
-	StackEntry pArray = stackPop(func);
+void op_setelem(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
+	struct StackEntry value = stackPop(func);
+	struct StackEntry elementIdx = stackPop(func);
+	struct StackEntry pArray = stackPop(func);
 
-	DataType elementType = (DataType)getMainType(&pArray.type);
-	if ((int)elementType != getMainType(&value.type)) {
+	enum DataType elementType = (enum DataType)getMainType(pArray.type);
+	if ((int)elementType != getMainType(value.type)) {
 		return;
 	}
 	int elementSize = getElementSize(elementType);
+#ifdef _DEBUG
+	assert(elementSize != -1);
+#endif
 	// copy value on stack to [pArr + (elementSize * index)] in global memory
 	memcpy((char*)ctx->globalMemoryBlock->mem + (elementIdx.value * elementSize), &value.value, elementSize);
 
@@ -239,11 +242,11 @@ void op_setelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) 
 #endif
 }
 
-void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) {
-	StackEntry elementIdx = stackPop(func);
-	StackEntry pArray = stackPop(func);
+void op_getelem(struct Instruction *instr, struct FunctionContext *func, struct RuntimeContext *ctx) {
+	struct StackEntry elementIdx = stackPop(func);
+	struct StackEntry pArray = stackPop(func);
 
-	DataType elementType = (DataType)getMainType(&pArray.type);
+	enum DataType elementType = (enum DataType)getMainType(pArray.type);
 	int elementSize = getElementSize(elementType);
 
 	long long value = 0;
@@ -251,7 +254,7 @@ void op_getelem(Instruction *instr, FunctionContext *func, RuntimeContext *ctx) 
 	stackPush(func, value, pArray.type);
 }
 
-void op_setvar(Instruction *instr, FunctionContext *func) {
+void op_setvar(struct Instruction *instr, struct FunctionContext *func) {
 	int varIdx = *(int*)instr->operand;
 	if (varIdx < 0 || varIdx > func->variableCount)
 		// invalid index
@@ -259,12 +262,12 @@ void op_setvar(Instruction *instr, FunctionContext *func) {
 
 	// more checks?
 
-	StackEntry value = stackPop(func);
+	struct StackEntry value = stackPop(func);
 	func->variables[varIdx]->type = value.type;
 	func->variables[varIdx]->value = value.value;
 }
 
-void op_getvar(Instruction *instr, FunctionContext *func) {
+void op_getvar(struct Instruction *instr, struct FunctionContext *func) {
 	int varIdx = *(int*)instr->operand;
 	if (varIdx < 0 || varIdx > func->variableCount)
 		// invalid index
@@ -273,4 +276,16 @@ void op_getvar(Instruction *instr, FunctionContext *func) {
 	// more checks?
 
 	stackPush(func, func->variables[varIdx]->value, func->variables[varIdx]->type);
+}
+
+void op_jle(struct Instruction *instr, struct FunctionContext *func) {
+	if (*(unsigned int*)instr->operand < 0 || *(unsigned int*)instr->operand > func->opCount)
+		// invalid offset
+		return;
+	struct StackEntry val2 = stackPop(func);
+	struct StackEntry val1 = stackPop(func);
+
+	if (val1.value <= val2.value) {
+		func->next = *(unsigned int*)instr->operand;
+	}
 }

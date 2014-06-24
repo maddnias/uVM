@@ -2,10 +2,10 @@
 #include "uVM.Runtime.h"
 #include "Executor.h"
 
-void stackPush(FunctionContext *func, long long value, TypeContainer type);
-StackEntry stackPop(FunctionContext *func);
-TypeContainer getTopStackType(FunctionContext *func);
-StackEntry stackPeek(FunctionContext *func);
-StackEntry stackPeek(FunctionContext *func, int depth);
-int getStackSize(FunctionContext *func);
-int verifyStack(FunctionContext *func, StackBehaviour behaviour);
+void stackPush(struct FunctionContext *func, long long value, struct TypeContainer *type);
+struct StackEntry stackPop(struct FunctionContext *func);
+struct TypeContainer *getTopStackType(struct FunctionContext *func);
+struct StackEntry *stackPeek(struct FunctionContext *func);
+struct StackEntry *stackPeek(struct FunctionContext *func, int depth);
+int getStackSize(struct FunctionContext *func);
+int verifyStack(struct FunctionContext *func, enum StackBehaviour behaviour);
